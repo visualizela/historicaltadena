@@ -1,74 +1,1703 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Map with Mapbox</title>
+    <title>Altadena Historical Photos</title>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
     <style>
-        body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+
+      /* Popup Container */
+      #popup-container {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 320px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        display: none;
+        z-index: 1000;
+      }
+
+      #popup-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+
+      #popup-image {
+        width: 100%;
+        height: auto;
+        border-radius: 5px;
+        margin-bottom: 8px;
+      }
+
+      #popup-description {
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      #popup-link {
+        display: block;
+        font-size: 14px;
+        color: blue;
+        text-decoration: underline;
+      }
+
+      /* Close Button */
+      #popup-close {
+        position: absolute;
+        top: 5px;
+        right: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        background: none;
+        border: none;
+      }
+
+      /* Map Title */
+      #map-title {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 8px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div id="map"></div>
+    <!-- Popup window -->
+    <div id="popup-container">
+      <button id="popup-close">✖</button>
+      <div id="popup-title"></div>
+      <img id="popup-image" src="" alt="Historical Photo">
+      <div id="popup-description"></div>
+      <a id="popup-link" href="" target="_blank">View Full Image</a>
+    </div> /* Map Title */ #map-title { position: absolute; bottom: 20px; left: 20px; background: rgba(0, 0, 0, 0.6); color: white; padding: 10px 20px; font-size: 18px; font-weight: bold; border-radius: 8px; } </style>
+    </head>
+    <body>
+      <div id="map"></div>
+      <!-- Popup window -->
+      <div id="popup-container">
+        <div id="popup-title"></div>
+        <img id="popup-image" src="" alt="Historical Photo">
+        <div id="popup-description"></div>
+        <a id="popup-link" href="" target="_blank">View Full Image</a>
+      </div>
+      <!-- Map Title -->
+      <div id="map-title">Altadena Historical Photos from USC's Digital Library</div>
+      <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYW5keS1ydXRrb3dza2kiLCJhIjoiWDJRMFVUWSJ9.iHl6Cf0M79wmHQlfP6Bk8Q';
+        const map = new mapboxgl.Map({
+          container: 'map',
+          style: 'mapbox://styles/mapbox/streets-v11',
+          center: [-118.1, 34.15], // Center on Altadena
+          zoom: 12
+        });
+        // Example GeoJSON Data (Replace with actual data)
+        const geojsonData = {
+          "type": "FeatureCollection",
+          "features": [{
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF19J8XC6",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNWMJqPMeNx1EIyMWg1JNSAnPZsX7xxfqliD1zAsbUZFlXQDlMYE4h0cwGco8QwLMl6Z6tzLe2qlYWmFSEKvJ9nkamjuX_jKz3rbPOPw4w6jV/r_lBVI_2H7_tz8VB/zaq@Zaxjb85L30P9/UC1947455.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Interior photograph of the Lamanda Park Branch Library, 140 South Altadena Drive, Pasadena, California, 1970 November.",
+              "Core Title / Name": "Pasadena Library, Calif., 1970",
+              "Inherited Core Title": "Thom: Institutional Projects",
+              "Subject": "Institutional project, Library  (subject)",
+              "latitude": 34.1434489,
+              "longitude": -118.098685
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.098685, 34.1434489]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF19JDWJS",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNT1@_DV6QvIWtxITBLTSjXvUMyxvvHYRQdCoj0dFNg3OnAhRns9M8b_JHC7gWxo1m1i3n9_UnmpCulIX_F7YovSPHGjtjSA4cf@my8ICSqhk/XCPcxG4KGWbNX4TP/juHE6qzoPT0sddDE/UC1947850.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Interior photograph of the Lamanda Park Branch Library, 140 South Altadena Drive, Pasadena, California, 1970 November.",
+              "Core Title / Name": "Pasadena Library, Calif., 1970",
+              "Inherited Core Title": "Thom: Institutional Projects",
+              "Subject": "Institutional project, Library  (subject)",
+              "latitude": 34.1434489,
+              "longitude": -118.098685
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.098685, 34.1434489]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF19JAVHG",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNa_taFd3eGw0xCmeTb2Ps_J1LUjICiDXOWOroeQlkbCbuyKrhlLE8sNZKN_pab1VORTHsAY7_Cro_EavwRP_zifkdYzEvqtZBF35E1qqxVK@/v4wB0H8_0U12@Ens/yz2A9mTm3A3GRupp/UC1947843.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Interior photograph of the Lamanda Park Branch Library, 140 South Altadena Drive, Pasadena, California, 1970 November.",
+              "Core Title / Name": "Pasadena Library, Calif., 1970",
+              "Inherited Core Title": "Thom: Institutional Projects",
+              "Subject": "Institutional project, Library  (subject)",
+              "latitude": 34.1434489,
+              "longitude": -118.098685
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.098685, 34.1434489]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF19JDM8C",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNcYF5CsMHoXYN@IOxFvQpfFD95JU1ZiMMRaOPIdW5yHELvOkur78VOG@@A6zkzEPUJtqD8Sb0u2MXfpRV@7Nl80wUPnd_1xmMRfQJCgRoQEg/6cwXQzT7ck_Ox9he/2yuWQk6rmShsO4eZ/UC1947858.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Exterior photograph of the Lamanda Park Branch Library, 140 South Altadena Drive, Pasadena, California, 1970 November.",
+              "Core Title / Name": "Pasadena Library, Calif., 1970",
+              "Inherited Core Title": "Thom: Institutional Projects",
+              "Subject": "Institutional project, Library  (subject)",
+              "latitude": 34.1434489,
+              "longitude": -118.098685
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.098685, 34.1434489]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF19JA0MG",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNWMJqPMeNx1EIyMWg1JNSAni0wgmasrxXELbhy6zfT660AxrN@vuPxVXJiVoIJkNQbo7fWQT9MRQnfogkbGXx3GINO5l4P7dS6GnwDTvIt8U/rjR_NSOstVENxsR3/jSoKa7c8Bqxk6_0A/UC1947825.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Exterior photograph of the Lamanda Park Branch Library, 140 South Altadena Drive, Pasadena, California, 1970 November.",
+              "Core Title / Name": "Pasadena Library, Calif., 1970",
+              "Inherited Core Title": "Thom: Institutional Projects",
+              "Subject": "Institutional project, Library  (subject)",
+              "latitude": 34.1434489,
+              "longitude": -118.098685
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.098685, 34.1434489]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF19JDP3H",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNcDYSF8Ic7UvO_XOtn4ry3EEFC6NbcuNqSFoTX9@zGCerQjEOAgP09kYci5HBgEWmvzUBbD4n_@5lp2VX6dIns23ptyQwJ8F3KVNMHCtOiW1/B5XXxSxLvVsq_qDM/nuhdRUogctuDWzcV/UC1947862.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Exterior photograph of the Lamanda Park Branch Library, 140 South Altadena Drive, Pasadena, California, 1970 November.",
+              "Core Title / Name": "Pasadena Library, Calif., 1970",
+              "Inherited Core Title": "Thom: Institutional Projects",
+              "Subject": "Institutional project, Library  (subject)",
+              "latitude": 34.1434489,
+              "longitude": -118.098685
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.098685, 34.1434489]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF19JAQ2E",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNb_c2NTSzHIy5gqVkF2Z_vRdbxQPKVxSWY@wc6HN64QtKObIMNzshmb941eNX22uKWmTARRxmzE8UJbrLQfJ6@vmEgcq4_O49C7L61GALfrN/WzVzndr0LZgm7frN/VZipz6qV_fgSK593/UC1947835.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Exterior photograph of the Lamanda Park Branch Library, 140 South Altadena Drive, Pasadena, California, 1970 November.",
+              "Core Title / Name": "Pasadena Library, Calif., 1970",
+              "Inherited Core Title": "Thom: Institutional Projects",
+              "Subject": "Institutional project, Library  (subject)",
+              "latitude": 34.1434489,
+              "longitude": -118.098685
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.098685, 34.1434489]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OWJM5_N",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNZSVzmVNKcNEWjSVF6P74ZJ7XY5rAz64_tStWrKcW4zKv_Iu2AJt1JqGHjluYR_9T8p0O4ZXlHc8HV2xhjAs2nuOuJtgPiY9dOpr6Xd74pdE/MjMTryxlZWDFBM9h/TTnCRDelgEdbaXkl/UC12212091.jpg",
+              "Inherited Coverage.Spatial": "California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of a grocery-store display of Heinz brand tomato ketchup with canned goods, Burbank, CA, 1941. According to the job card listing the stores, this was no. 2, at 3713 Magnolia Boulevard..",
+              "Core Title / Name": "Ketchup displays in various markets, Burbank, Calif., 1941 [image 2]",
+              "Inherited Core Title": "Ketchup displays in various markets, Los Angeles County, Calif., 1941",
+              "Subject": "Arco Food Center  (corporate name),Canned foods  (lcsh),Display of merchandise  (lcsh),Groceries  (lcsh),Grocers  (lcsh),Ketchup  (lcsh),Mr. Adler  (personal name)",
+              "latitude": 34.168096,
+              "longitude": -118.347594
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.347594, 34.168096]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OBGMIXT",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeQs71fSwDXtFP4KAaVQpCk@ziB6Lq@X3bQEVwkqmDFwiZ@xkOucuq2BobRU1DKl4tMFg1r8Id8Wu2JHlpdH9bt@cFGzgH80uLI1dne2YCXN/M6bCzj@msTW4cuCn/kpAbOwmuThxrGtL3/UC12024872.jpg",
+              "Inherited Coverage.Spatial": "1207 Morada Place (roadway),1221 Morada Place (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of 1207 Morada Place, Altadena, CA, 1925. \"1207\" -- address on house.",
+              "Core Title / Name": "Pasadena Homes, 1207 Morada Place, Altadena, CA, 1925 [image 1]",
+              "Inherited Core Title": "Pasadena Homes, 1207 Morada Place, Altadena, CA, 1925",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.18038436,
+              "longitude": -118.1256687
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1256687, 34.18038436]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1K57_1",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNYo0pljk1HME0q829Ndb9tY67rBIuDoexglde5MeoAZ7FEqkpWK70MNfVmpkJG1uxPE2OMimAPKJWvFvjsi4@729QXSFVIt2WIf1kGp2Y_xq/cPVDXSVS4KLN8l6y/9lm29sd1v8D3rCmA/UC130265.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of a drawing of a birdseye view of downtown Pasadena, with a key to the businesses depicted, [s.d.]. The commercial buildings of downtown Pasadena are depicted in the fore- and centergrounds of the drawing, with each building bearing a label as to the businesses it houses. Trees and smaller buildings stretch to the hills that sit at the horizon, including the Altadena Country Club Park. The top of the drawing reads \"A Sky View of Pasadena's Busy Business Center. Hang this up for future reference\". A key to the buildings shown sits in the lower right corner of the drawing, accompanied by a figure with a horn.",
+              "Core Title / Name": "Drawing of a birdseye view of downtown Pasadena, with a key to the businesses depicted, [s.d.]",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "buildings  (adlf),buildings  (lcsh),Cities and towns  (lcsh),Pasadena -- General  (file heading)",
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OWQ8H37",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNX9P_VulPiFWdU2ClToXA0PbjDa43OtV9cnmeG6o@R1PC7iFTghvhtw0nukgB760aowmFhPzf6CHAmBv4zHeZF53kdLs7PO2KukqAItMgxvK/Z1XE@hBHzcAZmHMH/hwH4gf5YxOlcuz0c/UC12188215.jpg",
+              "Inherited Coverage.Spatial": "California (states),California, Southern (region),USA (countries)",
+              "Core Description / Data": "Photograph of La Cañada Flintridge real estate sign, Southern California, 1926. \"'Distinction' to Reside in Flintridge; Fire and Police Protection, Schools, Five Golf Courses, Two Riding Academies in immediate Vicinity, Twenty Miles Bridle Paths, Protective Restrictions, On All Lots, Reasonable Prices and Terms; Comparative Distances, New Los Angeles Civic Center and Flintridge; Burbank, Oakmont Country Club, Flintridge, Glendale, Rose Bowl Stadium, Brookside Park, Amandale Country Club, L.A. Municipal Golf Course, Universal City, Cahuenga Pass, Midwick Country Club, L.A. Civic Center, Wilshire Country Club, Caballero Country Club, Encino Country Club, Hollywood Country Club, Beverly Hills Hotel, L.A. Country Club, Holmby Hills, Westwood; Hillcrest Country Club, Rancho Country Club, Brentwood Country Club, The Riviera, Topanga, Santa Monica Canyon, Palms, Culver City, Ocean Park, Venice, Inglewood, Pacific Ocean, Altadena, Pasadena High School, San Marino, San Gabriel, Monrovia, Montebello, Whittier, Hermosa\" -- on sign.",
+              "Core Title / Name": "Real estate--La Cañada Flintridge sign, Southern California, 1926 [image]",
+              "Inherited Core Title": "Real estate--La Cañada Flintridge sign, Southern California, 1926",
+              "Subject": "Real estate development  (lcsh),Signs and signboards  (lcsh)",
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPK4IOD",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNQmkXY5F6vlyeE8ExCh7FtVuOeEkPhXS22ZfFEK@inRSNPMUI@sn1beazbRaSSFMftY7DLMuAjC6yQYaIQ2y9hF3@FO6qepQbSAH@g9tYmaF/7rCR4i3VZqiUX1gj/7LqaBhCQ4hExIqiz/UC11729293.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),buildings: Altadena Country Club (geographic subject),California (states),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Pre Deb Ball - Altadena Country Club, 1956",
+              "Inherited Core Title": "Pre Deb Ball - Altadena Country Club, 1956",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPKIZGU",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeQs71fSwDXtFP4KAaVQpCkAtfTqg71T36fi0DOu4lD2IDRvAxzyslMsGqLlV_t4TofwNwjm79muj6hv6myz4bfCyiMo2wkRWcGtYdm_JVAO/1vUyYmJkz1Mv2H@L/VBPOBr2RSk0y3S1L/UC11729759.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),buildings: Altadena Country Club (geographic subject),California (states),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Pre Deb Ball - Altadena Country Club, 1956",
+              "Inherited Core Title": "Pre Deb Ball - Altadena Country Club, 1956",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPQBN09",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNWjIkiY2J@xKKsYTankyOo3fg7eItVQB6WcRFvfvDxWOqx6sA7oNvnIuC30pbGOyVzq@da8bXQMOwfzDWoblUCtIJJi22Ohc74d4AQgw1XYt/x0zWyWvwEj5@fT43/5CcqdjSJCuyHQY1k/UC11728904.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),buildings: Altadena Country Club (geographic subject),California (states),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Pre Deb Ball - Altadena Country Club, 1956",
+              "Inherited Core Title": "Pre Deb Ball - Altadena Country Club, 1956",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPQHUC5",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNcfW5KBWwyMrThJ26d@Nhd1HSXSCu9TapeXRckyN1P7XSi4X7QsNRdi3FwU@Tcyki98tAGZzClgPTHu@AkPH@4XSb7CxRKKHOepYls9PjQNk/tIzTfIhfVEfHiW6I/xutzJcbN3cbcrMDL/UC11728869.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),buildings: Altadena Country Club (geographic subject),California (states),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Pre Deb Ball - Altadena Country Club, 1956",
+              "Inherited Core Title": "Pre Deb Ball - Altadena Country Club, 1956",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPB6G92",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNZSVzmVNKcNEWjSVF6P74ZKvCtF@DaWp3gwo84l63UL@h9s2N2l_wtYmzaGa7CMUjIw6AHpGAQC8ecLIp7FJ9TIBgxzreoXWajkjcBCyJbcz/wsTrB6N2V4aDw7hW/48_8eM7LUmNiVYbp/UC11734430.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Country Club Drive (roadway),Los Angeles (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Altadena Town and Country Club dinner-dance, 1958",
+              "Inherited Core Title": "Altadena Town and Country Club dinner-dance, 1958",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPB69VI",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNf4PU_@hacAp6bdm7g6g5pBkkf6wuRGXpDVZSJxbijpTHngjWB5rIn4ZO4Jc4wNC3iB7lIi70U2pLjE7Knh87Dz3gLKBReH3Jn3Rr07oATi1/T5AVWKHNkhpoABiE/EJIbQVlyuvsC9U45/UC11734455.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Country Club Drive (roadway),Los Angeles (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Altadena Town and Country Club dinner-dance, 1958",
+              "Inherited Core Title": "Altadena Town and Country Club dinner-dance, 1958",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPB6ZP8",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNSyUPO0rhN9cy9IWcoZsm19q6UAlR8lPWBBmpbyTyo@404yCo9fBWC5dNIvQ28MuDGSTsrt4LIFF6ITsIK@NFmCe62FbQ0__OglaZyPIj9qj/lmGA5WTx4cnCyjFi/cYZI7YuLUJFjpC8B/UC11734437.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Country Club Drive (roadway),Los Angeles (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Altadena Town and Country Club dinner-dance, 1958",
+              "Inherited Core Title": "Altadena Town and Country Club dinner-dance, 1958",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPBJMQK",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNWjIkiY2J@xKKsYTankyOo11tqT3yjrjmujPsRxbgzZFAAJHml281rYuaUcdKJjdtiFtj4x7PwEBhOMA4w932BNrDc8w1d@jIaKYrNMaBFdV/VeUyRgJiMsvCxJy3/jZzCchFGlvOpMlv2/UC11734456.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Country Club Drive (roadway),Los Angeles (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Altadena Town and Country Club dinner-dance, 1958",
+              "Inherited Core Title": "Altadena Town and Country Club dinner-dance, 1958",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPB6DL7",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNUpoCvVS_8kIZ_ONaabKB0okZMyTC4nHE@KiYAgUovSRYpKKZq4HGo84eR6n1Uz9N3XG9fdzAnbjqWp7wCkGgHVbsYqr4oR_JKbfTtND3OIX/sE@7ehaIIuHxxryq/2YvWtZwHXddV2c7o/UC11734453.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Country Club Drive (roadway),Los Angeles (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Altadena Town and Country Club dinner-dance, 1958",
+              "Inherited Core Title": "Altadena Town and Country Club dinner-dance, 1958",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPBGYK1",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNSpw99ZLRQ6xgxMSuARWbeno2tnVnpdoftoUGYC_bpi6TLZM9Wb@GXmT4AqXHH9lOVxzVZPcJyzcB26Kue6eUIk1c3vbIkci5QUUUMv8hFoQ/WdcC2ZyOswWVaicp/fLh48TK_ZuaQVkn_/UC11734495.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Country Club Drive (roadway),Los Angeles (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Altadena Town and Country Club dinner-dance, 1958",
+              "Inherited Core Title": "Altadena Town and Country Club dinner-dance, 1958",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPBJY51",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNQmkXY5F6vlyeE8ExCh7FtX146uphFcVrlukyFOAoSOQaDctVHOAaHiK5O1GFCApQ5wKG5YpS3lS6KurVhRKqMUrHArvLmqEkqTLDZUq0JL3/cHuvAC_y7O1VCHV3/8LahunVXgLH1el2U/UC11734491.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Country Club Drive (roadway),Los Angeles (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Altadena Town and Country Club dinner-dance, 1958",
+              "Inherited Core Title": "Altadena Town and Country Club dinner-dance, 1958",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPBG7J9",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNXrDnWqfBmySK8mFTTo_qnxnCjHfh2P9LIxTOkpwmbit_1Yxu31SWVOSw1lWzovdN92EpR9WPlot1_gRhG0wctY2k8cmc68QOBg85fr4uSuv/Im1_p7zEImOpvY_J/6CEPjHQSYpvgO9ed/UC11734499.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Country Club Drive (roadway),Los Angeles (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Altadena Town and Country Club dinner-dance, 1958",
+              "Inherited Core Title": "Altadena Town and Country Club dinner-dance, 1958",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OPIQN0O",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNW9HYnl@fIkpU6lEUjlDQHUcomVD9fWw0DWgvaoqzolL4Qso38yFX7obwxoqJvejs7Yw0L0Ej9c28vAFIKekcdA5AfZJIKw2Om3_fEMra7d9/@@tSIqtTrKwfwsvA/XaM9FSFH41IHPorN/UC11767692.jpg",
+              "Inherited Coverage.Spatial": "2290 Country Club Drive (roadway),Altadena (city or populated place),California (states),Los Angeles (counties),recreational facilities: Altadena Town and Country Club (geographic subject),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Gay 90's Party, 1954",
+              "Inherited Core Title": "Gay 90's Party, 1954",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OP6VPKG",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNT6YqDJE15PfoLzvLbuMlILoiB7ctTGS5RdXRFbrSdyPO9uCu3Rx7BbijKUC4Y1k4LQZkGY2EAhQCRd0BxjA3nbqCtyvlHOLRN4q@K3jqExw/ZhSYNzdHBMGC6qkB/qRXqqqcEu9nflSPT/UC11767739.jpg",
+              "Inherited Coverage.Spatial": "2290 Country Club Drive (roadway),Altadena (city or populated place),California (states),Los Angeles (counties),recreational facilities: Altadena Town and Country Club (geographic subject),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Gay 90's Party, 1954",
+              "Inherited Core Title": "Gay 90's Party, 1954",
+              "Subject": null,
+              "latitude": 34.18608985,
+              "longitude": -118.1212118
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1212118, 34.18608985]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DIJTW",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNfSMMn4FIZnmTzCHHcfMGpFuwjtNVuyi0HQGJWMxv_P6FylY031bzDo0Qvm2v0I8FYLrE3x4pPJ9H1dC_LyRO9@9G0H80stZ@PlalNK7xyqB/rs@COiuccGwWewX3/zUcetvwEUjhdCBYs/UC128930.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of an exterior view of La Mariposa Hotel on the east side of Lake Avenue at Mariposa Street, seen from across the street, [s.d.]. A two-story adobe structure is pictured, its entrance a collection of five archways leading to the central door inside the courtyard. A single awning extends from the top floor, covered in terra cotta tiles. A sign over the two rightmost arches reads \"The Model Grocery Co.\". Railcar tracks can be seen embedded in the road's pavement. Mountains are visible to the right. The hotel was later the site of Webster's stores.",
+              "Core Title / Name": "Exterior view of La Mariposa Hotel on the east side of Lake Avenue at Mariposa Street, seen from across the street, [s.d.]",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "buildings  (adlf),Hotels, taverns, etc.  (lcsh),La Mariposa Hotel  (subject),Los Angeles County -- Altadena -- Architecture  (file heading)",
+              "latitude": 34.18785422,
+              "longitude": -118.1315989
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1315989, 34.18785422]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DWNA4",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNcYJPbgSezfw9M63xucqigmHk7OTPg6CcflaqArj@abW@3itRoy8LscB@vwyfdp1wA2PMEMECKHX5oONfMPwfPbi5BsQsdaCItq43zrh1ABq/_BNT0OdbcAaJGeCg/Lv9Qdfjq_t7trLsS/UC128959.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of the residence of the Andrew McNally and family (of the map making firm of Rand McNally & Company), 654 East Mariposa Street, Altadena, ca.1900. A long walkway leads up to the house. The path passes through an arch of foliage about halfway towards the house. Many plants and trees crowd the area on either side of the path. The house itself is three stories high and has a round turret at left. Behind the house can be seen Echo Mountain at the base of the famous Mount Lowe Railway which leads up to the Mount Lowe Tavern (all later dismantled).",
+              "Core Title / Name": "Exterior view of the Andrew McNally residence from a path and archway, Altadena, ca.1900",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Architecture, Domestic  (lcsh),Dwellings  (lcsh),Los Angeles County -- Altadena -- Architecture  (file heading),McNally, Andrew  (subject),residential sites  (adlf)",
+              "latitude": 34.1888211,
+              "longitude": -118.1360379
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1360379, 34.1888211]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DW3FX",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeR_fBo3_8VM1_pFZ7gZVFpu5UNkX8x0W2@sQtv8HrBTsTREUSFvS5HJ06ybMkmED4GTZv7nWxLa4bNMppl8EWnen58Wd@cF39@8tUIJkZ@K/@xvRvfJw9dACjTfx/hy8u4F4y_6Z9tKB7/UC128978.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of the residence of the Andrew McNally and family (of the map making firm of Rand McNally & Company), 654 East Mariposa Street at the corner of Santa Rosa Avenue, Altadena, ca.1900. A long walkway leads up to the house. Many plants and trees crowd the area on either side of the path. The house itself is three stories high and has a round turret at left. General Wentworth and friends are picking flowers in the garden. Part of another house is visible at right. Behind the house can be seen Echo Mountain at the base of the famous Mount Lowe Railway which leads up to the Mount Lowe Tavern (all later dismantled). Also visible is snow-covered Mount Wilson in the winter.",
+              "Core Title / Name": "Exterior view of the Andrew McNally residence in Altadena, ca.1900",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Architecture, Domestic  (lcsh),Dwellings  (lcsh),Flowers  (lcsh),Gardens  (lcsh),Los Angeles County -- Altadena -- Architecture  (file heading),McNally, Andrew  (subject),residential sites  (adlf),Wentworth  (subject)",
+              "latitude": 34.1888211,
+              "longitude": -118.1360379
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1360379, 34.1888211]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1D8N_R",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNYbQIsCd3Fx8WvxFKHz8@4KuKV@Ud29QALfhcSRoU2XQqpyKKGoLVjfJGVTbHhZgOPVPkBrAtCgsITDEzLbrhDgRtR_HuDJwAS@SyQd4ZeXF/AlhGID@mPXEoJ51k/TF86c85HwHdExmqn/UC128803.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of three children on a path leading to the Andrew McNally residence, [s.d.]. Just left of center, three young boys stand on a narrow path through a garden. The rightmost boy stares at the viewer, wearing a coat, vest and hat. While two others in darker clothing are farther in to the left. In the distance, a two-story home with a turret on its left side can be seen.",
+              "Core Title / Name": "Three children on a path leading to the Andrew McNally residence, [s.d.]",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "Architecture, Domestic  (lcsh),Dwellings  (lcsh),Gardens  (lcsh),Los Angeles County -- Altadena -- Architecture  (file heading),McNally, Andrew  (subject),residential sites  (adlf)",
+              "latitude": 34.1888211,
+              "longitude": -118.1360379
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1360379, 34.1888211]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DI5UK",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeR_fBo3_8VM1_pFZ7gZVFpD_mB1TGCBPDEvCtPr_MpfwftlPj2O1MHk3qea8GdCZeW5mSeZOMXvrVctvbjBmGz6az7726_rdfUYP_2i9Zfh/Vq_0Kgx3FF9TgYAN/AP@uAsCjW_r62uL1/UC128920.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of two young boys in the garden in front of the Andrew McNally residence in Altadena, 1900. Just right of center, two boys in coats and hats stand on a narrow path, examining a rose bush. In the background, a large, two-story home is pictured, a turret on its left side. Mountains are visible in the distance.",
+              "Core Title / Name": "Two young boys in the garden in front of the Andrew McNally residence in Altadena, 1900",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "Architecture, Domestic  (lcsh),Dwellings  (lcsh),Gardens  (lcsh),Los Angeles County -- Altadena -- Architecture  (file heading),McNally, Andrew  (subject),residential sites  (adlf)",
+              "latitude": 34.1888211,
+              "longitude": -118.1360379
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1360379, 34.1888211]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1D7WPD",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNUjPGohaiWAtbu55nmDzrJIdtQ0xLvuJb3MbRE@nOcA8wMuWH_KxNMbokJQ3qFLBEoFvHZsjjNRjjnyqJO7PMO43YzW85C@0UJrSDr3x9hIM/Ii1dawYoXil_ykrc/b6Fc8mLrvtTQeN5h/UC129101.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of an exterior view of the Andrew McNally bungalow, [s.d.]. At center, a small ranch house is pictured, with chairs on the porch, to which wide steps lead. In front, two trees and a narrow path can be seen. In the foreground, a small patch of grass skirts the road. In the background, a mountain ridge is visible.; Photoprint reads: \"Altadena, the beautiful little suburb of Pasadena, nestles among the foothills, at the foot of Mt. Lowe. The famous poppy fields are found here and its beautiful shade streets lined with handsome homes, its fragrant orange groves make it a place to be remembered\".",
+              "Core Title / Name": "Exterior view of the Andrew McNally bungalow, [s.d.]",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Architecture, Domestic  (lcsh),Dwellings  (lcsh),Los Angeles County -- Altadena -- Architecture  (file heading),McNally, Andrew  (subject),residential sites  (adlf)",
+              "latitude": 34.1888211,
+              "longitude": -118.1360379
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1360379, 34.1888211]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1D7PX8",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNYo0pljk1HME0q829Ndb9tbcgj_aQvymshHhSnxRUauy6P4pG6FR48sqrUpu4h9ZhXp2tQ@kXTlRE6goKGXERBT@dz4tJzdEHFK4Aurb800Q/mN1mtpSsBR1BPK_N/inHYO2S7HOjHKSqS/UC129100.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of an exterior view of the Andrew McNally residence, shown from a nearby path, Altadena, [s.d.]. At center, a two-story mansion is visible, with a turret at its left. In the foreground, trees and foliage stand to either side of a smooth, narrow path.; Photoprint reads: \"Altadena, the beautiful little suburb of Pasadena, nestles among the foothills, at the foot of Mt. Lowe. The famous poppy fields are found here and its beautiful shade streets lined with handsome homes, its fragrant orange groves make it a place to be remembered\".",
+              "Core Title / Name": "Exterior view of the Andrew McNally residence, shown from a nearby path, Altadena, [s.d.]",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "Architecture, Domestic  (lcsh),Dwellings  (lcsh),Los Angeles County -- Altadena -- Architecture  (file heading),McNally, Andrew  (subject),residential sites  (adlf)",
+              "latitude": 34.1888211,
+              "longitude": -118.1360379
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1360379, 34.1888211]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OWSMNLE",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNZSVzmVNKcNEWjSVF6P74ZISusgFpzHb3RpwisxYYGFMXKCnggacgHrCHT1pwZFkWFYoWEoJzfeEDH1IT6ca7h1krdT1A8OhezUwVxMTTCgG/I345lw4AH0kKp4gs/C24fZp4U1KdU1mEr/UC12194276.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of mausoleum, Altadena, CA, 1926.",
+              "Core Title / Name": "Mausoleum, Altadena, CA, 1926 [image]",
+              "Inherited Core Title": "Mausoleum, Altadena, CA, 1926",
+              "Subject": "Mausoleums  (lcsh)",
+              "latitude": 34.1888211,
+              "longitude": -118.1360379
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1360379, 34.1888211]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OYMQH9M",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNf3nrImvCCJ9Jt@uSy2m7YcoAlkjhs@v2h49opQMacqv9oKUZK4GPQkKv1WiPWt6qbHle1gtyPpyZx6H6DYFf_roneMUZamhMIt477kiKLQq/fLND3QgRZvlHGv2P/5UOU9iq8PouRJh4J/UC12101493.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),California, Southern (region),East Woodbury Road (roadway),Los Angeles (counties),Santa Rosa Avenue (roadway),USA (countries)",
+              "Core Description / Data": "Photograph of photograph of Christmas Tree Lane, Altadena, CA, 1931. \"Santa Rosa Ave[nue]\" -- on curb. \"Photo by 'Dick' Whittington\" -- on photograph.",
+              "Core Title / Name": "Christmas Tree Lane, Altadena, CA, 1931 [image]",
+              "Inherited Core Title": "Christmas Tree Lane, Altadena, CA, 1931",
+              "Subject": "Christmas decorations  (lcsh),Christmas trees  (lcsh)",
+              "latitude": 34.18921991,
+              "longitude": -118.1364888
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1364888, 34.18921991]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1P02UAH",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeEvCYg8EMIcI6Sc2ZfRpQce@8vRRXysPOI81qEdT0DILUmc3OHQw7EnZarCE5XdjNb7TN6mLinQui1VO_@jZNIWlpxDKT6iHWzrXG6N4w8u/4rbxmff9wZG1yaBX/QG5b1O6G10Kjxxw6/UC11688413.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Detail 1 of 2, Altadena Christmas Tree Lane, 1953",
+              "Inherited Core Title": "Altadena Christmas Tree Lane, 1953",
+              "Subject": null,
+              "latitude": 34.18921991,
+              "longitude": -118.1364888
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1364888, 34.18921991]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1PFA7_V",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNZSVzmVNKcNEWjSVF6P74ZIe0zC73ZHjsW8B3ILUJMGSAV6u3ibibDd87@wPnitsbEO1iX92vxZgap3dq7ukM4SgiRfYYfeZ1XkGCLAEMJbb/Ggz8NXrmXIk37PEL/zmcUyOrXtKSayJwF/UC11697113.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Detail 2 of 2, Altadena Christmas Tree Lane, 1953",
+              "Inherited Core Title": "Altadena Christmas Tree Lane, 1953",
+              "Subject": null,
+              "latitude": 34.18921991,
+              "longitude": -118.1364888
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1364888, 34.18921991]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DABH5",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNa@XW07bxWQ0cGvEH6zsbsxEpS8PogzuvNwfWwrc7fUcjheJqIOtdLFVM6oOGTQu5dLaqLVgINjTtczpGQ1KmK6ueWw@RB5CetRTIh8UCuhZ/4fMKh35kOVLVLCil/D9KhLCR@77Yn6mOY/UC129090.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of Santa Rosa Avenue in Altadena, known as Christmas Tree Lane during the holidays when its deodar trees are decorated with lights for its entire length, [s.d.]. Two opposing walls of evergreen trees shade the narrow street at center. An automobile drives from the mountains in the background towards the intersecting street in the foreground. Several street signs stand in the grass at right.",
+              "Core Title / Name": "Santa Rosa Avenue in Altadena, known as Christmas Tree Lane during the holidays, [s.d.]",
+              "Inherited Core Title": "Los Angeles Area Chamber of Commerce Collection 1890-1960",
+              "Subject": "Christmas decorations  (lcsh),Los Angeles County -- Altadena -- General  (file heading),roadways  (adlf),Streets  (lcsh),Trees  (lcsh)",
+              "latitude": 34.18921991,
+              "longitude": -118.1364888
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1364888, 34.18921991]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1D7XQ1",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNTkSVtKCr1TfylXvr5gjuFWebNyrstYCS1KVqfF8Y7sfwfrHtyBAZkP3HfLEB1kSrvxu3sUmQ@U5v22Rq1ACoSymuzJxTD4PDjuenF_ohY_j/ex6@76tvh4DLrohv/lpWcb@JHUHrcNv0p/UC129112.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of Santa Rosa Avenue in Altadena, known as Christmas Tree Lane during the holidays when its deodar cedars are decorated with lights for its entire length, shown during the daytime, [s.d.]. Tall, thick deodar cedars stand on either side of the narrow street at center. They continue to reach over the street from either side into the distance where mountains can be seen. Deodar cedar is the official tree of Altadena.",
+              "Core Title / Name": "Christmas Tree Lane in Altadena, shown during the daytime, [s.d.]",
+              "Inherited Core Title": "Los Angeles Area Chamber of Commerce Collection 1890-1960",
+              "Subject": "Cedrus deodara  (subject),Christmas decorations  (lcsh),Los Angeles County -- Altadena -- General  (file heading),roadways  (adlf),Streets  (lcsh)",
+              "latitude": 34.18921991,
+              "longitude": -118.1364888
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1364888, 34.18921991]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1D93CX",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeR_fBo3_8VM1_pFZ7gZVFqeXH5y_bunDJngrNUXV4e8fe95CIFfHb5DATsVPmfVdFy3wPQkN13JXrITeaIl7gWYE46AX2g4RX8Aabth1PLt/zr0VVBA8X8ICeZdN/FFEPaLPPguk@d4QT/UC129138.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of Santa Rosa Avenue in Altadena, known as Christmas Tree Lane during the holidays when its deodar trees are decorated with lights for its entire length, showing an automobile during the daytime, [s.d.]. The long, dusty street extends into the distance at center. Thick evergreen trees shade the road from either side. An automobile can be seen driving down the narrow street in the background.",
+              "Core Title / Name": "Christmas Tree Lane in Altadena, showing an automobile during the daytime, [s.d.]",
+              "Inherited Core Title": "Los Angeles Area Chamber of Commerce Collection 1890-1960",
+              "Subject": "Christmas decorations  (lcsh),Los Angeles County -- Altadena -- General  (file heading),roadways  (adlf),Streets  (lcsh),Trees  (lcsh)",
+              "latitude": 34.18921991,
+              "longitude": -118.1364888
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1364888, 34.18921991]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DPP88",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNZ7lm62dW3rB20CKF17qte7HfGXKWtcdd5z8XQTQfoz6oy0iQWqEh0RQ4ReLpyzo04ugP3FFfa8NpI3bUEYDpkTTVBpeEvfaWm6J95_k4tFN/rP0ZlqRUzI0YBtx3/Tgt8n9BoCZLOhRRU/UC129345.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of Santa Rosa Avenue in Altadena, also known as Christmas Tree Lane during the holidays when its deodar trees are decorated with lights for its entire length, California, [s.d.]. Pine trees line the sides of the dirt road to a great distance. Other sprouts of plant life are visible near the road boundaries. A person standing (or walking?) in the middle of the street is visible in the distance.",
+              "Core Title / Name": "Santa Rosa Avenue in Altadena, also known as Christmas Tree Lane, California, [s.d.]",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Botany -- Trees -- Evergreen  (file heading),Christmas decorations  (lcsh),Los Angeles County -- Altadena -- General  (file heading),roadways  (adlf),Streets  (lcsh),Trees  (lcsh)",
+              "latitude": 34.18921991,
+              "longitude": -118.1364888
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1364888, 34.18921991]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1D9G3U",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNVmCXAyEC68wOdhF@9WAL_ZgE162ER_EjhHsu0xx2qCwoY4aZVJBtAv6t6Fpq@oX3xlo8bWAhuaAlvZn5B60SAppcTptNgY3rZx7DvM3Uokj/jpUNLhciphyDWxxJ/QjqOpm94q3ItuIgz/UC129154.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of a view of Santa Rosa Avenue in Altadena, showing automobiles, 1925. The single lane of the paved road cuts through two rows of tall deodar trees, which are decorated with lights for the entire length of the road during winter holidays, giving the street the nickname \"Christmas Tree Lane\". Two early automobiles are immediately apparent a short way up the road, while a longer line of cars can be seen hazily, closer to the horizon.",
+              "Core Title / Name": "View of Santa Rosa Avenue in Altadena, showing automobiles, 1925",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Botany -- Trees -- Evergreen  (file heading),Christmas decorations  (lcsh),Los Angeles County -- Altadena -- General  (file heading),roadways  (adlf),Streets  (lcsh),Trees  (lcsh)",
+              "latitude": 34.18921991,
+              "longitude": -118.1364888
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1364888, 34.18921991]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DGKAP",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNRowIKgQsSbOZnbOcfS7akJ@g@abV9WXeetswOQgXbLM2YOgGMLffGkQMt7fYbRDn@bYPT8LvJR3zOrXW7yPYktLRVyFLlyHJKprbNZjUw5Y/F7FDRt_PJFVK3rh2/pOTxq2EkzyPFPv_f/UC129053.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of an exterior view of the Altadena residence of Colonel George G. Green, owner of the Hotel Green, ca.1900. The dwelling is on the southwest corner of Santa Rosa Avenue and Mariposa Street. A stone lined drive curves broadly up toward the house from the entry which has, on the visible side, a stone lamp post. Stone lined footpaths branch off the drive. The well manicured lawn has trees and other plants at pleasing intervals. Mountains are visible in the background. The house was later the site of the Altadena Library.",
+              "Core Title / Name": "Exterior view of the Altadena residence of Colonel George G. Green, owner of the Hotel Green, ca.1900",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Architecture, Domestic  (lcsh),Dwellings  (lcsh),Green, Colonel George G.  (subject),Los Angeles County -- Altadena -- Architecture  (file heading),residential sites  (adlf)",
+              "latitude": 34.18946947,
+              "longitude": -118.1367273
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1367273, 34.18946947]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OBG4WVH",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNZSVzmVNKcNEWjSVF6P74ZKnfxYjITcHxDwD3cb_OA1v3KZq12VESndqPhm_@jl85obKUAgmKag@iz8I4YW@7_@zC_ZY_M5ed1jOi@JNpv6J/jAQm6yjGuYfNB_oh/YcAYsuChLRzbw9Lz/UC12025521.jpg",
+              "Inherited Coverage.Spatial": "561 Royce Street (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of house, 561 Royce Street, Altadena, CA, 1925.",
+              "Core Title / Name": "561 Royce Street, Altadena, CA, 1925 [image]",
+              "Inherited Core Title": "561 Royce Street, Altadena, CA, 1925",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.18993969,
+              "longitude": -118.1621223
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1621223, 34.18993969]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1WNIPZ0",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNWjIkiY2J@xKKsYTankyOo3OjKoqbXe1QJuwAnZd0qVDxsM@uasYp6lwe5lto@LeY0yftZXui234ix1zD5Zq7NxWhy59BAdieWqT5GNVWbSE/R__pXCsgqW4ZaWfV/ARuQENGe5Pjsrz@E/UC11636355.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": null,
+              "Core Title / Name": "Prayer lamp, Altadena, 1951",
+              "Inherited Core Title": "Prayer lamp, Altadena, 1951",
+              "Subject": null,
+              "latitude": 34.19025059,
+              "longitude": -118.1298158
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1298158, 34.19025059]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1WTQG9T",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNSpw99ZLRQ6xgxMSuARWbek@3e1XsEcwmhReyHsGhkG2oGUrU7T22IUhSaYxnDBsVH@bCWUvpysIeyC2HnFFx9V764rq2doX23wTfbIUEciI/06GIzsK3fAh0nk3T/gKB_BIOjt3sm36ZS/UC11635366.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": null,
+              "Core Title / Name": "Prayer lamp, Altadena, 1951",
+              "Inherited Core Title": "Prayer lamp, Altadena, 1951",
+              "Subject": null,
+              "latitude": 34.19025059,
+              "longitude": -118.1298158
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1298158, 34.19025059]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1WTU1HF",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNQNgoplt_HOX3ESMRQ6p_txlov6ZoVwcmUrlJ_KMdOEEjhcIv6b1PtAvxe6IQi5zllayAVlV0y5OZPoq79fkUOuGRC5uw7EijD3av@RfcgBB/ka@a3OVTzjHRBEFU/zk_4@UA1jKs1PLHK/UC11635331.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": null,
+              "Core Title / Name": "Prayer lamp, Altadena, 1951",
+              "Inherited Core Title": "Prayer lamp, Altadena, 1951",
+              "Subject": null,
+              "latitude": 34.19025059,
+              "longitude": -118.1298158
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1298158, 34.19025059]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1BIMZWQ",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNSVGvL9zQte@oMtcp9tMuTQ_LKm4m8cezqz9p@eR8WC4PpISuvylNvodA8SuNExTEMuA4glv9XYecwvMbyhOuRJO7AhjNFDU6aZplCn_rEEu/09wIsR0TwRBE_CFD/vlbpwDv_C2TgVEUS/UC1547110.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph (engineering notebook photoprint) of proposed grade crossing over Pacific Electric Fair Oaks Line at Harriet Street, Altadena, Los Angeles County. Pacific Electric Railway no. 103. Looking west along center line of Harriet Street across Pacific Electric Railway tracks and Fair Oaks Avenue. Note steep grade of tracks. Also visible are: buildings (businesses), trees, utility poles and lines, signs. No legible signs.",
+              "Core Title / Name": "Proposed grade crossing over Pacific Electric Fair Oaks Line at Harriet Street, Altadena, Los Angeles County, 1926",
+              "Inherited Core Title": "Automobile Club of Southern California engineering notebook photoprints, 1922-1941",
+              "Subject": "buildings  (lcsh),Railroads -- Crossings  (lcsh),roadways  (adlf),Trees  (lcsh)",
+              "latitude": 34.190414,
+              "longitude": -118.149508
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.149508, 34.190414]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1BIMWCX",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNSVGvL9zQte@oMtcp9tMuTT8hAcfH01ovdgOWawinG027YUnsqEXNuxXd70_HfXjAj_Sscm7ABg3LXbn7uhukgeVNpIAk8S0D7qkdCnYxFd_/pfyxzfdNmMORtElt/Lbfa_YH03feXedAo/UC1547109.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph (engineering notebook photoprint) of proposed grade crossing over Pacific Electric Fair Oaks Line at Harriet Street, Altadena, Los Angeles County. Looking west along center line of Harriet Street. Also visible are: trees, buildings (houses, businesses), pedestrians, utility poles and lines, signs. Legible signs: \"Lots\", ...\"cr[...]ce [...] fine\"...",
+              "Core Title / Name": "Proposed grade crossing over Pacific Electric Fair Oaks Line at Harriet Street, Altadena, Los Angeles County, 1926",
+              "Inherited Core Title": "Automobile Club of Southern California engineering notebook photoprints, 1922-1941",
+              "Subject": "buildings  (lcsh),Railroads -- Crossings  (lcsh),roadways  (adlf),Trees  (lcsh)",
+              "latitude": 34.190414,
+              "longitude": -118.149508
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.149508, 34.190414]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1BIM1V7",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNc_V08N5QllGuRD1PisXHwpoE2HwRfHgqkwDwllAw9@w6otKmeD3cTj7ievmQyUxaTWLf4wwmgKuilq7@x5aKcU_uKnu3ewj@CBqe@qiz7Io/_w98f3UvLxiA_B0q/4LGmw_1U0sfynwTz/UC1547115.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph (engineering notebook photoprint) of proposed grade crossing over Pacific Electric Fair Oaks Line at Harriet Street, Altadena, Los Angeles County. Looking southeast across proposed crossing and southerly along Fair Oaks Avenue from northwest side of Harriet Street and Fair Oaks Avenue. Also visible are: houses, bicyclist, mailbox, automobile, utility poles and lines, trees, hills in the background. Legible signs include: ...\"sacrifice [...] $7500\"..., \"We build [...] fi[...] homes\", \"Altadena Ter[...] Lo\"...",
+              "Core Title / Name": "Proposed grade crossing over Pacific Electric Fair Oaks Line at Harriet Street, Altadena, Los Angeles County, 1926",
+              "Inherited Core Title": "Automobile Club of Southern California engineering notebook photoprints, 1922-1941",
+              "Subject": "buildings  (lcsh),Railroads -- Crossings  (lcsh),roadways  (adlf),Trees  (lcsh)",
+              "latitude": 34.190414,
+              "longitude": -118.149508
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.149508, 34.190414]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1PY473Z",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNW9HYnl@fIkpU6lEUjlDQHU1hhTHNtN78QE3CGXDOsFHve_plM3oxzbu9RcDA8Kk_HKA06CqtzbnPJX5wTAcRFDfNvQtLTxbXN8u3EKkrUGB/szhi_au7EqXrek47/aHnaRP93MIladEqq/UC11721418.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Los Angeles (counties),Monrovia (city or populated place),Pasadena (city or populated place),religious facilities: Altadena Congregational Church (geographic subject),religious facilities: Baptist Church (geographic subject),religious facilities: Church of Jesus Christ of Latter Day Saints (geographic subject),USA (countries)",
+              "Core Description / Data": "Altadena Congregational Church",
+              "Core Title / Name": "Churches, 1952",
+              "Inherited Core Title": "Churches, 1952",
+              "Subject": null,
+              "latitude": 34.19071597,
+              "longitude": -118.1305759
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1305759, 34.19071597]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DA0XI",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNTkSVtKCr1TfylXvr5gjuFWuQwjXXKRzge5qR3Cuc_rZoZfTiJz9CKpqMK72vYaDpwEijbl4QI_sBmjxq8KPILdV_G6mkz3yygTYmT0UKz2j/ZYfjqFtrcvxDnZsF/AjDDoMxCEkxN8vQU/UC129075.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of a passenger car from the Mount Lowe Incline Railway descending from the mountain into the Rubio Pavilion, [s.d.]. An open-air cart packed with passengers is visible at the very foot of the mountain's slope, stopped by a set of steps. An American flag waves from the center of the car, while other individuals wait along the tracks. A train car is visible to the left, next to the visible roof of the Rubio Pavilion. The mountain fills the background.",
+              "Core Title / Name": "Passenger car from the Mount Lowe Incline Railway descending from the mountain into the Rubio Pavilion, [s.d.]",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Mountains  (lcsh),railroad features  (adlf),Railroads, Cable  (lcsh)",
+              "latitude": 34.20552663,
+              "longitude": -118.1168729
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1168729, 34.20552663]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DGZQ7",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNW074jufCFBGzDLsRT4i1Wgmu2nxqMgCx471zbFSI8uNgQPpQwC6IhqTi3CxKfXOd4UdynnJfoBBiYhB5Ht1fBNi7316sBwINMqDv388DMye/tKybwRWAlX9G@yic/yC_AHzWS7rLfQW4V/UC129027.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of aerial view of Mount Lowe Railway track at Horseshoe Loop, showing view of surrounding area, [s.d.]. At the bottom of the image, a track can be seen moving alongside a steep mountain slope covered in thick vegetation at left. Further to the right, another track can be seen surrounded by scrub brush. In the background at center, a track can be seen moving further to the right through a thick forest of trees. To the far left, another track also parts the dense forest. Above the line of trees and vegetation, outlines of mountain ranges can be seen in the background. A valley is also visible to the far right. Image is a wider shot compared to CHS-1380.",
+              "Core Title / Name": "Mount Lowe Railway track at Horseshoe Loop, showing view of surrounding area, [s.d.]",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Electric railroads  (lcsh),Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Mountains  (lcsh),Mountains  (adlf)",
+              "latitude": 34.21236898,
+              "longitude": -118.1210233
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1210233, 34.21236898]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DGHDR",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNcYJPbgSezfw9M63xucqigm7_3@1n7QVpEFTAjRC0bEa7rUoExmJDvFXb3eRHSm558YliNoy7fCoxAqmoMZDEl92c31U0xtu_QYiCjIclumd/aJR_OjmIuxQL8b1y/zdhwoQdnY7jf45Dv/UC129034.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of Mount Lowe Railway serpentine track moving through trees, showing greater detail, [s.d.]. To the left, a winding section of track can be seen moving through a dense cluster of trees. The track curves upwards into the forest and vanishes from sight temporarily. In the dense forest at left, a small section of track is visible. At center, another small section of track can be seen and soon vanishes from sight beneath the thick cluster of trees. Further to the right, another section of track is visible. This section can be seen winding through the forest before becoming visible again in the foreground at right. In the extreme background at right, large mountain ranges are visible.",
+              "Core Title / Name": "Mount Lowe Railway serpentine track moving through trees, showing greater detail, [s.d.]",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Electric railroads  (lcsh),Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Mountains  (lcsh),Trees  (adlf)",
+              "latitude": 34.21236898,
+              "longitude": -118.1210233
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1210233, 34.21236898]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DOEZ9",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNVmCXAyEC68wOdhF@9WAL_aFdzaHTo8AgKrk4ikvi5aDQfPMmF2O5McQC2urwD9L3_z9po2FR8OojoSZpmpmvdFp7frzqXhdnQIAn@dRpfOC/JS2F5XCZIER3pz@Q/mkW_dAeq9BVzYeuJ/UC129017.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of an exterior view of the Echo Mountain House with people on the porch, [s.d.]. The large white hotel building is at center. It is three stories tall and has a wrap-around porch. A large, multi-sided tower is at center, and two chimneys protrude from the roof on either side. A series of stone retaining walls is at left. There are many people gathered on the porch and on the stairway that leads to the building at right. The top of Echo Mountain is visible beyond the hotel. The building was constructed in 1894 and burned down in 1900.",
+              "Core Title / Name": "Exterior view of the Echo Mountain House with people on the porch, [s.d.]",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "buildings  (adlf),Echo Mountain House  (subject),Hotels, taverns, etc.  (lcsh),Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Mountains  (lcsh)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DIPB8",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNW074jufCFBGzDLsRT4i1WhpGyruXY8M1vpG6VpZBz5V19_Q4JLRrD6DeaYUxNZLcjhDWHe8G7JrI7HmH903zGZHrckygecixmkq0BrV3HiK/s7aybH2743CIa9fR/RlivNTbsD7R5wddv/UC128925.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of passengers exiting an Echo Mountain Railway car at the newly-opened Echo Mountain House on Mount Lowe, 1894. Many people, all of whom are dressed in dark clothing, are standing in or near an open incline railway car at right. The tracks continue across the image to the foreground at left, and the porch of the Echo Mountain House is visible above them at left. A line of utility poles runs parallel to the tracks down the mountin at right.",
+              "Core Title / Name": "Passengers exiting a railway car at the newly-opened Echo Mountain House on Mount Lowe, 1894",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "Hotels, taverns, etc.  (lcsh),Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Mountains  (lcsh),railroad features  (adlf),Railroads, Cable  (lcsh)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DYI6K",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNYYSPxQWAqi04IOGjJaPUmgCev61OQR5luY9byx26A0@YGw_KIvsCh50Zz1GPujYLgyjRXZVewYcGkojgCFFUDaYFzFrrVgNjdMVAtQt0XqZ/jY@yLmEbXvbAsNZg/JnPKawA@SIEnmnHd/UC128870.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of an exterior view of the Echo Mountain House, taken from Trails magazine, [s.d.]. The massive hotel is in the background at center, prominently perched on a mountainside. It is three stories high, with a domed tower at right and a wrap around porch. The tracks of the Echo Mountain Inclined Railway run from the foreground at left, past the front of the house, and into the distance at right. A small building is to the right of the tracks, and a low shed is in the foreground at center. There is an American flag on the shed, and unidentified flags fly from the other two buildings. The hotel was built in 1893 and burned on February 5, 1900.",
+              "Core Title / Name": "Exterior view of the Echo Mountain House, taken from Trails magazine, [s.d.]",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "buildings  (adlf),Echo Mountain House  (subject),Hotels, taverns, etc.  (lcsh),Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Mountains  (lcsh)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DWUKP",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNcYJPbgSezfw9M63xucqiglisUqHxRRCXh9QUkJ3L9rAuVCWlH9scscA1zEzKTpAd57MAJ52cmWts9p4EOiGYXvJwJmIwC1_Kt5B0piKK2_h/5TaH2ptyiHTsQMAo/DxET1GCrEx9yhH3r/UC128967.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph through the trees of the Echo Mountain Observatory and Echo Mountain House (in the background) covered in snow. The valley floor crisscrossed with agricultural parcels is visible in the distance. Additional information: The Echo Mountain House was destroyed by a fire in 1900.",
+              "Core Title / Name": "Echo Mountain Observatory and Hotel in Winter, ca.1895-1900",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Altadena -- Mt. Lowe  (file heading),Astronomy  (file heading),Echo Mountain House  (subject),Echo Mountain Observatory  (subject),Hotels, taverns, etc.  (lcsh),Mountains  (lcsh),Observatories  (lcsh),research facilities  (file heading)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DWF3X",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeR_fBo3_8VM1_pFZ7gZVFrEB5_SKslm@weHMDOkdch5gi7thzAboVFZDzV3GRXDPHmjiniSvW2FgfIiULH_Xkzi8m8zCXN7yvfb19LenL@n/3J044A8jLbvS45@S/rXXeR1hRUrbEdxy@/UC128983.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of the Echo Mountain Observatory (Mount Lowe Observatory) buildings, 1910. The rotating dome of the building housing the large telescope is open toward the foreground. Several people stand on a path near a railing at the top of a small one-story wooden building. A wooden platform is in the foreground. The mountains rise closely in the background.",
+              "Core Title / Name": "Echo Mountain Observatory, 1910",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Mountains  (lcsh),Observatories  (lcsh),research facilities  (adlf)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DW5IK",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNTkSVtKCr1TfylXvr5gjuFVl4@PdMdNvu8jL152LNG@NkVfRJE_WsmMEbwcVG51CimUYKywfxXFr9nEn2VmZ1V_1Dl_xd8XntmVN8kEq30na/U@aCspS6e9ZdexKf/1Amfq_2IGJUL3ofH/UC128955.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of man in hat standing next to large search light on Echo Mountain. The light is mounted on a wooden platform and includes wheels and cranks to adjust its angle and direction. In the mirror of the light can be seen a building behind the photographer (not visible). Behind the light the vista of rectangular agricultural tracts and mountains can be seen in the distance.",
+              "Core Title / Name": "Echo Mountain search light, [s.d.]",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Lighting  (lcsh),Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Mountains  (lcsh),Search-lights  (lcsh)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1DWHMR",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNfSMMn4FIZnmTzCHHcfMGpH1uCxQau6fZpMdqG86vnTzIymzmGdp8bSN2I06HIbMgIzduWLm_KwcZ3vQ_gWz5CWITaFjNXAU9Bc@vGiEIcIt/_gIrdbiM_J8WRuQ2/erp6ijXAh3PXlhkq/UC128964.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of a view of the Los Angeles basin (including Pasadena), with Echo Mountain House and Observatory in foreground, [s.d.]. The large Echo Mountain House stands at the top of a grassy hill in the left foreground with a road next to it that leads to the Observatory at right. The Los Angeles basin lies behind the hill with roads extending through the many grass fields. A fog hangs over the basin and low mountains are barely visible in the background.",
+              "Core Title / Name": "Echo Mountain House and Observatory with view of basin, [s.d.]",
+              "Inherited Core Title": "Title Insurance and Trust and C.C. Pierce Photography Collection 1860-1960",
+              "Subject": "Hotels, taverns, etc.  (lcsh),Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Mountains  (lcsh),Observatories  (lcsh),research facilities  (adlf)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1D8A_R",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNa@XW07bxWQ0cGvEH6zsbsxkA98e6E8cy9EL36nk7ad6zGtvxUA9oP71MWOmwUQEAxrpLmx1ggo6e4eVBS@AT03ytM7CQVV5F1x49hvPrdgw/Dj16lBhrZ0JkRKU8/v8sQHDex1Oqf6oWM/UC128798.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of Echo Mountain Observatory and surrounding mountain seen from a distance, April 1st,1924. In the distance right of center, an observatory can be seen glistening in the sunlight on top of a mountain. In the foreground, the individual trees that cover the mountain are visible along with the trails and roads that lead to the observatory. A mountain range can be seen on the horizon while fluffy white clouds cover the sky.",
+              "Core Title / Name": "Echo Mountain Observatory and surrounding mountain seen from a distance, April, 1924",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "Mountains  (adlf),Mountains  (lcsh),Observatories  (lcsh),Observatories -- Mount Wilson Observatory  (file heading)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1D9XK1",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNcYJPbgSezfw9M63xucqigl6whMWnwzz53qwG0voqccYHyxZ_oYND@Jgx3c@Exxv5xvM5vHJXn4MRLe2ThxZ36J8T1YVwQLQ22VbreK_aDrO/@XneenQlMh_FrPO8/HKSwTxeqiNdLqiTT/UC129137.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of an interior view of the dining room at the Echo Mountain House, ca.1894. Rectangular tables fill the long room with lightly-colored table clothes draped over them. The napkins are nicely folded and the silverware is carefully arranged in front of each wooden chair. A man in a dark suit stands at center while five ladies in lightly-colored dresses are scattered throughout the room. A fireplace stands in the center background while windows stand along the back wall at right.",
+              "Core Title / Name": "Echo Mountain House dining room, ca.1894",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "buildings  (adlf),Dinners and dining  (lcsh),Echo Mountain House  (subject),Hotels, taverns, etc.  (lcsh),Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Mountains  (lcsh),Restaurants, lunch rooms, etc.  (lcsh)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1D90HI",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNa@XW07bxWQ0cGvEH6zsbsxsUUP1DcDrt6rLj9sGWeTEu8S0u_aUtb1xbkE2eWDr3AmymEUgw7PPSV_vjiyQp00I8zGPjRm0fQ1ZRFFFM46k/SqFqo6K5dQMFHh0o/W1AoWPEmDfuhB_32/UC129134.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of Professor Thaddeus S. C. Lowe (far left) and guests on the veranda of the Echo Mountain House, ca.1895. The small group of finely-dressed people stands on the long, lightly-colored veranda at left while a view of a second large house can be seen at right. Behind the large house stand the tree-spotted mountains.",
+              "Core Title / Name": "Echo Mountain House veranda, with Professor Thaddeus S. C. Lowe and guests, ca.1895",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "buildings  (adlf),Echo Mountain House  (subject),Hotels, taverns, etc.  (lcsh),Los Angeles County -- Altadena -- Mt. Lowe  (file heading),Lowe, Professor Thaddeus S. C.  (subject),Mountains  (lcsh)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1YN4QE",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNfSMMn4FIZnmTzCHHcfMGpEnkwLmoohpKsWeZJVQd3sxjtV@c92YWcxELv_hKaOq6e7Q6K_P9hX5RF_N0t1wkoURz3OAZqDddjtNtMpxRxon/QxCETZZE9LIQYqjQ/GoxYpTVofVtRU_UB/UC125807.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of a view of a building on top of Echo Mountain in Altadena, [s.d.]. The two-story stucco building can be seen at center. Three large archways on the first floor provide access to a wraparound covered porch. Two women can be seen at right, walking across a narrow road. A rectangular window is visible on the second floor of the building, and two men are visible in the window. The roof of the building is covered with terracotta tiles, and a spotlight can be seen on the roof at center. A sign on the front of the building reads: \"Echo Mountain 3500 ft. above Sea Level\".",
+              "Core Title / Name": "View of a building on top of Echo Mountain in Altadena, [s.d.]",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "Mountains  (lcsh),railroad features  (adlf)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1YN17H",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNYbQIsCd3Fx8WvxFKHz8@4LjtTs0YU4Ae5ZH9YVV9jeYwAXJdlHl_foICv9xF1sCOd5BK44_vdBT8cNFuq1_b_tkOfIXFZJh8V3wiaLx6hdS/kOMOBIBkiPzljpNV/BfmdUZzGKFS7PJ5v/UC125805.jpg",
+              "Inherited Coverage.Spatial": null,
+              "Core Description / Data": "Photograph of people seated on a small trolley car on Echo Mountain, [s.d.]. The car can be seen in the foreground at right and consists of a platform with back-to-back benches and a small roof. Six people can be seen sitting on the benches, while a donkey can be seen behind the car at center. Two men are visible at left. In the background, the San Gabriel Mountains are visible.",
+              "Core Title / Name": "People seated on a small trolley car on Echo Mountain, [s.d.]",
+              "Inherited Core Title": "California Historical Society Collection, 1860-1960",
+              "Subject": "Mountains  (lcsh),railroad features  (adlf)",
+              "latitude": 34.21461465,
+              "longitude": -118.1209338
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.1209338, 34.21461465]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1O5P08JQ",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNUpoCvVS_8kIZ_ONaabKB0obLszQXjf39N_FnRDMZHYNK7Skdqn8ZpMzbiDMmJ7nKEK6moJMizD_UgIAeJ@2Lp2ZqM3WkuR@M8MP3cxixdqi/xSaQd9k6Kx635yEL/Jx32tCSl5YPP2y30/UC12064551.jpg",
+              "Inherited Coverage.Spatial": "Arcadia (city or populated place),California (states),California, Southern (region),Foothill Boulevard (roadway),Los Angeles (counties),North Santa Anita Avenue (roadway),USA (countries)",
+              "Core Description / Data": "Photograph of house on southeast corner, North Santa Anita Avenue & Foothill Boulevard, Arcadia, CA, 1926.",
+              "Core Title / Name": "Southeast corner, North Santa Anita Avenue & Foothill Boulevard, Arcadia, CA, 1926 [image 1]",
+              "Inherited Core Title": "Southeast corner, North Santa Anita Avenue & Foothill Boulevard, Arcadia, CA, 1926",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.150909,
+              "longitude": -118.03144
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.03144, 34.150909]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1O5PXEGX",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNf4PU_@hacAp6bdm7g6g5pCMi8qtZ3tndMLhZdBIKDLVifQ@hR@Y3hgg2SWmyetU7Y7RewvuzHhxMbdvSvhj6jAm0UB3gSHliwPrLIPmf@_2/FaXthUnGgy1mQflR/HfQaS1o0IDQwRiKd/UC12064614.jpg",
+              "Inherited Coverage.Spatial": "Arcadia (city or populated place),California (states),California, Southern (region),Foothill Boulevard (roadway),Los Angeles (counties),North Santa Anita Avenue (roadway),USA (countries)",
+              "Core Description / Data": "Photograph of house on southeast corner, North Santa Anita Avenue & Foothill Boulevard, Arcadia, CA, 1926.",
+              "Core Title / Name": "Southeast corner, North Santa Anita Avenue & Foothill Boulevard, Arcadia, CA, 1926 [image 2]",
+              "Inherited Core Title": "Southeast corner, North Santa Anita Avenue & Foothill Boulevard, Arcadia, CA, 1926",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.150909,
+              "longitude": -118.03144
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.03144, 34.150909]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OMNBY8S",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNQmkXY5F6vlyeE8ExCh7FtUvHE52Y2Qi6oosDecrbSFUp5fb019vj27@AxzkT8t95jiTgzJL1NMwrsqEjLc8j7N@hjwH@LZb@oIjJ1yeAgzk/fhMv7U5duHrzqBGf/OMMBmfWh_CrStALx/UC12138561.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),California, Southern (region),East Woodbury Road (roadway),Los Angeles (counties),North Madison Avenue (roadway),USA (countries)",
+              "Core Description / Data": "Photograph of roads East Woodbury Road and North Madison Avenue, Altadena, CA, 1932. \"2T 15 75\" --on license plate.",
+              "Core Title / Name": "East Woodbury Road and North Madison Avenue, Altadena, CA, 1932 [image 1]",
+              "Inherited Core Title": "East Woodbury Road and North Madison Avenue, Altadena, CA, 1932",
+              "Subject": "Automobiles  (lcsh),Roads  (lcsh),Trees  (lcsh)",
+              "latitude": 34.179714,
+              "longitude": -118.138134
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.138134, 34.179714]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OMNFLNT",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNQNgoplt_HOX3ESMRQ6p_txzgbo682rec98Yql38igIPUgPrCj1Bd7XgQ12O_ehKAZXJAKR_p93AXVgUh0MQcMfeB9jj8id_hZQoHEtTHb_H/_iF5rWAdQueQQwUZ/mHFXziRaV_z8vmPm/UC12138573.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),California, Southern (region),East Woodbury Road (roadway),Los Angeles (counties),North Madison Avenue (roadway),USA (countries)",
+              "Core Description / Data": "Photograph of roads East Woodbury Road and North Madison Avenue, Altadena, CA, 1932. \"Dick Whittington, commercial photographer\" -- on car. \"74 29 82\" -- on license plate.",
+              "Core Title / Name": "East Woodbury Road and North Madison Avenue, Altadena, CA, 1932 [image 2]",
+              "Inherited Core Title": "East Woodbury Road and North Madison Avenue, Altadena, CA, 1932",
+              "Subject": "Automobiles  (lcsh),Roads  (lcsh),Trees  (lcsh)",
+              "latitude": 34.179714,
+              "longitude": -118.138134
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.138134, 34.179714]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OMNB1SL",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNZSVzmVNKcNEWjSVF6P74ZKB06W6p7rIu6YcaRABjNFsQMZ7fXcYSYrsSt@v88mPXjEKHfOH1W4eJsUamOBDxDyNKX8BKxUDyXrWPMj4HyiN/YMGsFrCytUInzoYg/NifbnxmGwPIg7VEC/UC12138569.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),California, Southern (region),East Woodbury Road (roadway),Los Angeles (counties),North Madison Avenue (roadway),USA (countries)",
+              "Core Description / Data": "Photograph of roads East Woodbury Road and North Madison Avenue, Altadena, CA, 1932.",
+              "Core Title / Name": "East Woodbury Road and North Madison Avenue, Altadena, CA, 1932 [image 3]",
+              "Inherited Core Title": "East Woodbury Road and North Madison Avenue, Altadena, CA, 1932",
+              "Subject": "Automobiles  (lcsh),Roads  (lcsh),Trees  (lcsh)",
+              "latitude": 34.179714,
+              "longitude": -118.138134
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.138134, 34.179714]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OMNBSUE",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNT6YqDJE15PfoLzvLbuMlIJwSUcnT2G@MXojuzlsXm@MQFnKtRPDgjZyMa4@jNkn5ErR3j_vTd9FMT54zdrnE@b@RfYlCcyBMyhK2NX7QQiX/6zcOW6XBc03Rys@r/2xbwJPOYOHPXNRjw/UC12138559.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),California, Southern (region),East Woodbury Road (roadway),Los Angeles (counties),North Madison Avenue (roadway),USA (countries)",
+              "Core Description / Data": "Photograph of roads East Woodbury Road and North Madison Avenue, Altadena, CA, 1932. \"Dick Whittington, commercial photographer\" -- on car. \"74 29 82\" -- on license plate.",
+              "Core Title / Name": "East Woodbury Road and North Madison Avenue, Altadena, CA, 1932 [image 4]",
+              "Inherited Core Title": "East Woodbury Road and North Madison Avenue, Altadena, CA, 1932",
+              "Subject": "Automobiles  (lcsh),Roads  (lcsh),Trees  (lcsh)",
+              "latitude": 34.179714,
+              "longitude": -118.138134
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.138134, 34.179714]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OBGMTHG",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNf4PU_@hacAp6bdm7g6g5pBdFAhagm14cf6uV@uThfeeyj@4GYj@7otqwT79RclgPItwakvVeJkMZ7icqUCGczmUIKHkDeVtvW7QISQoT7Mj/CBCL2_te1dhgRTJa/z_VrgClTNsQcL9mT/UC12024878.jpg",
+              "Inherited Coverage.Spatial": "1207 Morada Place (roadway),1221 Morada Place (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of 1207 Morada Place, Altadena, CA, 1925. \"1207\" -- address on house.",
+              "Core Title / Name": "Pasadena Homes, 1207 Morada Place, Altadena, CA, 1925 [image 2]",
+              "Inherited Core Title": "Pasadena Homes, 1207 Morada Place, Altadena, CA, 1925",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.180166,
+              "longitude": -118.125656
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.125656, 34.180166]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OBGM82E",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNSyUPO0rhN9cy9IWcoZsm1_J5qVyefTpYy1MRE2VyRHI_wTqwgDfwX7gI2VnOehBcjfG0Kso0vwpnrHPSp4JvP0TsjiMk18HTl_Nzt4BqCap/IGg0xe5@dwBFCiNA/l6xEY6Kjf2_ZMdNA/UC12024867.jpg",
+              "Inherited Coverage.Spatial": "1207 Morada Place (roadway),1221 Morada Place (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of 1207 Morada Place, Altadena, CA, 1925",
+              "Core Title / Name": "Pasadena Homes, 1207 Morada Place, Altadena, CA, 1925 [image 3]",
+              "Inherited Core Title": "Pasadena Homes, 1207 Morada Place, Altadena, CA, 1925",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.180166,
+              "longitude": -118.125656
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.125656, 34.180166]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OBGMD1H",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNWjIkiY2J@xKKsYTankyOo3xg_ekq0eqHP9UK5@BkBHz46uDNgY1LSEfsuUMBUPM3LspAK57_RLafmCYxfmIz6FDxTTawkmHZvWzl2N1rrzl/KOqsxPyh1hMnYkqi/27BvpHVY2lBz1Ziw/UC12024870.jpg",
+              "Inherited Coverage.Spatial": "1207 Morada Place (roadway),1221 Morada Place (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of 1221 Morada Place, Altadena, CA, 1925. \"1221\" -- address on house.",
+              "Core Title / Name": "Pasadena Homes, 1207 Morada Place, Altadena, CA, 1925 [image 4]",
+              "Inherited Core Title": "Pasadena Homes, 1207 Morada Place, Altadena, CA, 1925",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.180166,
+              "longitude": -118.125656
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.125656, 34.180166]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OXR31FR",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNWjIkiY2J@xKKsYTankyOo2vV1DJC6tYc_ClgmQfO7i_zDjW1YJZeYoG0Y_4VZfXj9EVviNZRdkWyXq8s4XHP@qOoD157Ce_pFZeVbYQqJRF/FHxDOaxRtsgZmtIM/BOZumKQFTxdt4kzc/UC12225381.jpg",
+              "Inherited Coverage.Spatial": "548 Spring Street (roadway),California (states),California, Southern (region),Los Angeles (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "1936 Ford - Ralph Winchester assured File #s.c.b.o. 3245, Altadena, Calif., 1940",
+              "Inherited Core Title": "1936 Ford - Ralph Winchester assured File #s.c.b.o. 3245, Altadena, Calif., 1940",
+              "Subject": null,
+              "latitude": 34.184602,
+              "longitude": -118.126633
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.126633, 34.184602]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OW4G1ZX",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNf4PU_@hacAp6bdm7g6g5pDzE6OOaXzGRrVKalcFW4h5GKvfJvcd9zc@mf7HsPK2KGnVj6kljvTa_r0TxC@oBfIn_wjFkJkGMpmKgYnptDt5/4UE7i1oQubn9hq_5/lmaqTGiloaz2Kju1/UC12225180.jpg",
+              "Inherited Coverage.Spatial": "548 Spring Street (roadway),California (states),California, Southern (region),Los Angeles (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "1936 Ford - Ralph Winchester assured File #s.c.b.o. 3245, Altadena, Calif., 1940",
+              "Inherited Core Title": "1936 Ford - Ralph Winchester assured File #s.c.b.o. 3245, Altadena, Calif., 1940",
+              "Subject": null,
+              "latitude": 34.184602,
+              "longitude": -118.126633
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.126633, 34.184602]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1O5W71KB",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNQmkXY5F6vlyeE8ExCh7FtWK9_0JqyN7AKN2e2XbBrEtg3J4iAl3YaC4e2pVToqMBoEg0cAJXnnmSTmnYlz17t@XDbwayaqueDBO82spIJgx/sYIjdl1idRNLwuo6/1dqVDC5PGd3MP7M1/UC12059630.jpg",
+              "Inherited Coverage.Spatial": "1508 Braeburn Road (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of 1508 Braeburn Road, Altadena, CA, 1927.",
+              "Core Title / Name": "1508 Braeburn Road, Altadena, CA, 1927 [image 1]",
+              "Inherited Core Title": "1508 Braeburn Road, Altadena, CA, 1927",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.187262,
+              "longitude": -118.119583
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.119583, 34.187262]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1O5WV1AB",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNQmkXY5F6vlyeE8ExCh7FtVxngP7dAtT0SvjDTZzfyA73CwYFo6wB0DOY2PAo04T5fqBFwtdaSyRTQOp1B@GKmqeCMjvWmU6AX4sBClajS5j/445kSK8QdwWcuE4_/jz4YEeH1rU3@9he_/UC12059643.jpg",
+              "Inherited Coverage.Spatial": "1508 Braeburn Road (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of 1508 Braeburn Road, Altadena, CA, 1927.",
+              "Core Title / Name": "1508 Braeburn Road, Altadena, CA, 1927 [image 2]",
+              "Inherited Core Title": "1508 Braeburn Road, Altadena, CA, 1927",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.187262,
+              "longitude": -118.119583
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.119583, 34.187262]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1O5WO0T5",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNT6YqDJE15PfoLzvLbuMlIIKrtFusVlWdBJbMWow5hcUoBUpk3@08UJPdVYFaACpdXG19yZnm6Znsx0TYnSAub1T01azcb_HfPOW0fTurEAv/4smAo@TGA1jIa17d/I3pazlN82if6EgW3/UC12059657.jpg",
+              "Inherited Coverage.Spatial": "1508 Braeburn Road (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of 1508 Braeburn Road, Altadena, CA, 1927.",
+              "Core Title / Name": "1508 Braeburn Road, Altadena, CA, 1927 [image 3]",
+              "Inherited Core Title": "1508 Braeburn Road, Altadena, CA, 1927",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.187262,
+              "longitude": -118.119583
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.119583, 34.187262]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1PR46_8",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNZSVzmVNKcNEWjSVF6P74ZJg@h25TryQ5JpeHGdIIHPP32@u28iHaU1BpUN4VJA_dgkGXSK4TN5eC34pDkf4zdrtjqVj4kbr2JrouaL1mRTS/axEcAU_wFVg05Udx/H94S5aYmK7q15E92/UC11691852.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Detail 1 of 2, Tombstone bumper, 1953",
+              "Inherited Core Title": "Tombstone bumper, 1953",
+              "Subject": null,
+              "latitude": 34.190222,
+              "longitude": -118.131523
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.131523, 34.190222]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1PRJAO8",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNUpoCvVS_8kIZ_ONaabKB0qTTVsiv93S8M55xTS@1AjEGdYPu82XJ3cSRLZb5MdETOqK9GFijXRmYEhVrOEEbsFybuduJFtxWnonWyDesjrX/QhQGeqjhErp9Z9RX/SglVLy1csG0sDLxY/UC11691934.jpg",
+              "Inherited Coverage.Spatial": "Altadena (city or populated place),California (states),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Detail 2 of 2, Tombstone bumper, 1953",
+              "Inherited Core Title": "Tombstone bumper, 1953",
+              "Subject": null,
+              "latitude": 34.190222,
+              "longitude": -118.131523
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.131523, 34.190222]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OWS16OV",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNT6YqDJE15PfoLzvLbuMlILsD_Gm7krvhSZbahTRkLUt8zfH0uppwwWzr7j_i0geIFtxOjXEJhZey380@fv4XSX3IAlDxgdbzUcJsQpC9L8J/PK4autbtPFH4LuPF/uUxOk9nxZ66ubFOu/UC12194266.jpg",
+              "Inherited Coverage.Spatial": "2731 Lake Avenue (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of Pacific Southwest Bank, Altadena, CA, 1927. \"Tho[ma]s. A. Hogan, M.D.; J.W. Harrison, D.D.S.; A[l]taden[a] Branch, Pacific Southwest Tru[s]t & Sav[i]ngs Bank, Savings, Commercial, Trust, Identical Ownership with The First National Bank of Los Angeles and First Securities Co.\" -- signage on building. \"Lake Ave[nue]\" -- on curb. \"2731\" -- address on building.",
+              "Core Title / Name": "Pacific Southwest Bank, Altadena Branch, Altadena, CA, 1927 [image 1]",
+              "Inherited Core Title": "Pacific Southwest Bank, Altadena Branch, Altadena, CA, 1927",
+              "Subject": "Banks and banking  (lcsh)",
+              "latitude": 34.192729,
+              "longitude": -118.131245
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.131245, 34.192729]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OWS18YC",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNX9P_VulPiFWdU2ClToXA0OiBLUHOytr3EciWcKyT298lDmrZ9tTWDit_7RXa4z7LJLxa9eCzqrPIQPhb0a12Ej1kigaayGNoq07w7j6AAwF/mE8lvYiOe79eSAQ@/vc1F3_hsyrgIRl0E/UC12194108.jpg",
+              "Inherited Coverage.Spatial": "2731 Lake Avenue (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of interior of Pacific Southwest Bank, Altadena, CA, 1927. \"R.A. Smith Jr., Teller; [ilg] Kamp, Teller\" -- signage in bank.",
+              "Core Title / Name": "Pacific Southwest Bank, Altadena Branch, Altadena, CA, 1927 [image 2]",
+              "Inherited Core Title": "Pacific Southwest Bank, Altadena Branch, Altadena, CA, 1927",
+              "Subject": "Banks and banking  (lcsh)",
+              "latitude": 34.192729,
+              "longitude": -118.131245
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.131245, 34.192729]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OWS15ML",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNT6YqDJE15PfoLzvLbuMlIJ3JNBXVjIx@2VtOeOeLGFGAOiBZzrbsOiyM_MKqAHoI4suAQU9tO@OxSuDQhietskqQNi2O5_7r7tMk7HWHdwt/OokrQ_dIAjalaE5r/6e5j_@qANY63Opwe/UC12194265.jpg",
+              "Inherited Coverage.Spatial": "2731 Lake Avenue (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of interior of Pacific Southwest Bank, Altadena, CA, 1927.",
+              "Core Title / Name": "Pacific Southwest Bank, Altadena Branch, Altadena, CA, 1927 [image 3]",
+              "Inherited Core Title": "Pacific Southwest Bank, Altadena Branch, Altadena, CA, 1927",
+              "Subject": "Banks and banking  (lcsh)",
+              "latitude": 34.192729,
+              "longitude": -118.131245
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.131245, 34.192729]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OXX4E3P",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNT6YqDJE15PfoLzvLbuMlIKwfgRQw78z_904SEWMboxjQcb8Cpjw5cwSVBpDP0Pgu0rG763oCalrJltQWem_cxogc@BcFbdYpKLxZZZkC1pL/mDhDt@6n99tj0zlI/sojIHNf_0goCgQt9/UC12241330.jpg",
+              "Inherited Coverage.Spatial": "331 East Las Flores Drive (roadway),Altadena (city or populated place),California (states),California, Southern (region),Los Angeles (counties),North Fair Oaks Avenue (roadway),Santa Anita Avenue (roadway),USA (countries),Valley View (roadway)",
+              "Core Description / Data": "Photograph of skidmarks on street, Altadena, CA, 1941.",
+              "Core Title / Name": "Skidmarks at Santa Anita Drive and Valley View, Altadena, CA, 1941 [image]",
+              "Inherited Core Title": "Skidmarks at Santa Anita Drive and Valley View, Altadena, CA, 1941",
+              "Subject": "Roads  (lcsh)",
+              "latitude": 34.193567,
+              "longitude": -118.13719
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.13719, 34.193567]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1O5214R2",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeEvCYg8EMIcI6Sc2ZfRpQcFc_j20COSCMzy117xiisC9shkyvOY9GGkt4WSc9A5VZejILmQE9XRaah2@XEg8HsORQgoUUYTUMtBmzWoj3oK/f8qN@ZuN4Z8L37fK/AjhzikEFEVoY5oHf/UC12039569.jpg",
+              "Inherited Coverage.Spatial": "360 Foothill Boulevard (roadway),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of 360 Foothill Boulevard, Southern California, 1926.",
+              "Core Title / Name": "360 Foothill Boulevard, Southern California, 1926 [image 1]",
+              "Inherited Core Title": "360 Foothill Boulevard, Southern California, 1926",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.1978,
+              "longitude": -118.185555
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.185555, 34.1978]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1O5210Y7",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNUpoCvVS_8kIZ_ONaabKB0pL@_SeFAmYExknXn8jxvvJTidFrYp@fN99yW3GpwAryof5Z@iN78yXbAjGQjSHg93EoPobh@MvZ@39y_5Qoc@7/ykp1qWS70revjvtk/aoASAJO46350XZVM/UC12039567.jpg",
+              "Inherited Coverage.Spatial": "360 Foothill Boulevard (roadway),California (states),California, Southern (region),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": "Photograph of exterior of 360 Foothill Boulevard, Southern California, 1926.",
+              "Core Title / Name": "360 Foothill Boulevard, Southern California, 1926 [image 2]",
+              "Inherited Core Title": "360 Foothill Boulevard, Southern California, 1926",
+              "Subject": "Dwellings  (lcsh)",
+              "latitude": 34.1978,
+              "longitude": -118.185555
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.185555, 34.1978]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OW0J256",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNcfW5KBWwyMrThJ26d@Nhd0us9MnmCjfHvRPRnJV4JEy_lkmMU1WQ47qKTAMWNgMNGXK8hLHkqJwz8JUTOlF_L_TlhMFXywaTSex7Bvo5ZgH/VbVdeZyWMWwLmfvv/d4oUvNkwuqbcdbad/UC12221936.jpg",
+              "Inherited Coverage.Spatial": "1234 East Foothill Boulevard (roadway),California (states),California, Southern (region),La Cañada Flintridge (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Mrs. M. Youngblood's Car - (Damage), 1234 East Foothill Boulevard, La Ca?ada Flintridge, CA, 1940",
+              "Inherited Core Title": "Mrs. M. Youngblood's Car - (Damage), 1234 East Foothill Boulevard, La Cañada Flintridge, CA, 1940",
+              "Subject": null,
+              "latitude": 34.206618,
+              "longitude": -118.20485
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.20485, 34.206618]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OXX8R14",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeEvCYg8EMIcI6Sc2ZfRpQfeGF00qJvlV38ekCCQsOslLU5RFGHcixdnbft7VdsgDPLyv1OHdigt@06IAYxcBpVJVctaNMAX474jZMlg9pWy/nhVywpCVxFNyCL3_/PiJL8G@3Q83gH2WN/UC12241481.jpg",
+              "Inherited Coverage.Spatial": "1234 East Foothill Boulevard (roadway),California (states),California, Southern (region),La Cañada Flintridge (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Mrs. M. Youngblood's Car - (Damage), 1234 East Foothill Boulevard, La Ca?ada Flintridge, CA, 1940",
+              "Inherited Core Title": "Mrs. M. Youngblood's Car - (Damage), 1234 East Foothill Boulevard, La Cañada Flintridge, CA, 1940",
+              "Subject": null,
+              "latitude": 34.206618,
+              "longitude": -118.20485
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.20485, 34.206618]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OW0I3DA",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeQs71fSwDXtFP4KAaVQpCmOzMLEefDeHYn0JFMKix3j7gCocA04XafjlM9rF5NqETv6ZPaBI9RxC6ajzAWXklVrtaQrhI0PrPQY4e9ugfHf/hcJmJ19s3ltI2qhO/ua49xHqfttnYOZIM/UC12221962.jpg",
+              "Inherited Coverage.Spatial": "1234 East Foothill Boulevard (roadway),California (states),California, Southern (region),La Cañada Flintridge (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Mrs. M. Youngblood's Car - (Damage), 1234 East Foothill Boulevard, La Ca?ada Flintridge, CA, 1940",
+              "Inherited Core Title": "Mrs. M. Youngblood's Car - (Damage), 1234 East Foothill Boulevard, La Cañada Flintridge, CA, 1940",
+              "Subject": null,
+              "latitude": 34.206618,
+              "longitude": -118.20485
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.20485, 34.206618]
+            }
+          }, {
+            "type": "Feature",
+            "properties": {
+              "Link to view in Cortex": "https://digitallibrary.usc.edu/asset-management/2A3BF1OXX8YEP",
+              "Preview (medium)": "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNeQs71fSwDXtFP4KAaVQpCld@NKsNznIBwT0qAiwi_p6b4MpIZ0183im4ktW138bsgd2MGFzizHeiWvJ0YDr4Wvr2fK1nP94I7LRKqGnJ38y/33IM@UWJP1S6UpBu/p1YZJySSj3l_pcyi/UC12241477.jpg",
+              "Inherited Coverage.Spatial": "1234 East Foothill Boulevard (roadway),California (states),California, Southern (region),La Cañada Flintridge (city or populated place),Los Angeles (counties),USA (countries)",
+              "Core Description / Data": null,
+              "Core Title / Name": "Mrs. M. Youngblood's Car - (Damage), 1234 East Foothill Boulevard, La Ca?ada Flintridge, CA, 1940",
+              "Inherited Core Title": "Mrs. M. Youngblood's Car - (Damage), 1234 East Foothill Boulevard, La Cañada Flintridge, CA, 1940",
+              "Subject": null,
+              "latitude": 34.206618,
+              "longitude": -118.20485
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-118.20485, 34.206618]
+            }
+          }]
+        };
+       // Add points to the map
+        geojsonData.features.forEach((feature) => {
+            const { coordinates } = feature.geometry;
+            const properties = feature.properties;
 
-<div id="map"></div>
+            // Create a marker
+            const marker = new mapboxgl.Marker()
+                .setLngLat(coordinates)
+                .addTo(map);
 
-<script>
-    // Set up Mapbox
-    mapboxgl.accessToken = 'pk.eyJ1IjoiYW5keS1ydXRrb3dza2kiLCJhIjoiWDJRMFVUWSJ9.iHl6Cf0M79wmHQlfP6Bk8Q';
-    const map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
-        center: [-118.12121181812985, 34.18608985029485], // Default center (Pasadena)
-        zoom: 10
-    });
+            // Handle click event
+            marker.getElement().addEventListener('click', (event) => {
+                event.stopPropagation(); // Prevent closing when clicking the map
 
-    // Data points from your dataset
-    const locations = [
-        { 
-            title: "Lamanda Park Branch Library",
-            description: "Interior photograph of the Lamanda Park Branch Library, Pasadena, 1970.",
-            coordinates: [-118.098685, 34.1434489], 
-            image: "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNWMJqPMeNx1EIyMWg1JNSAnPZsX7xxfqliD1zAsbUZFlXQDlMYE4h0cwGco8QwLMl6Z6tzLe2qlYWmFSEKvJ9nkamjuX_jKz3rbPOPw4w6jV/r_lBVI_2H7_tz8VB/zaq@Zaxjb85L30P9/UC1947455.jpg"
-        },
-        { 
-            title: "Altadena Country Club",
-            description: "Altadena Town and Country Club dinner-dance, 1958.",
-            coordinates: [-118.12121181812985, 34.18608985029485], 
-            image: "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNRkxaKGhSDBxo6nlX@xrVnOc6APt91LrHlR9VaNCqKkAm2XsvVcBqcKN2La_ALarI8uZOP@in8ozRP08FLrHDPxos46QXCTG5vPMsQAntlmc/BWcFm1SDn6ul859U/hNNnF06VPb@NP@W6/UC12188215.jpg"
-        },
-        { 
-            title: "Christmas Tree Lane",
-            description: "Christmas Tree Lane, Altadena, CA, 1931.",
-            coordinates: [-118.13648879730562, 34.189219910754225], 
-            image: "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNVmCXAyEC68wOdhF@9WAL_ZgE162ER_EjhHsu0xx2qCwoY4aZVJBtAv6t6Fpq@oX3xlo8bWAhuaAlvZn5B60SAppcTptNgY3rZx7DvM3Uokj/jpUNLhciphyDWxxJ/QjqOpm94q3ItuIgz/UC129154.jpg"
-        },
-        { 
-            title: "Echo Mountain House",
-            description: "Echo Mountain House and Observatory with view of basin, [s.d.].",
-            coordinates: [-118.12093377220566, 34.2146146518163], 
-            image: "https://digitallibrary.usc.edu/Assets/V2/iv6mLbYB3oV@e7MOcHcLNYYSPxQWAqi04IOGjJaPUmgCev61OQR5luY9byx26A0@YGw_KIvsCh50Zz1GPujYLgyjRXZVewYcGkojgCFFUDaYFzFrrVgNjdMVAtQt0XqZ/jY@yLmEbXvbAsNZg/JnPKawA@SIEnmnHd/UC128870.jpg"
-        }
-    ];
+                document.getElementById('popup-title').textContent = properties["Core Title / Name"];
+                document.getElementById('popup-image').src = properties["Preview (medium)"];
+                document.getElementById('popup-description').textContent = properties["Core Description / Data"];
+                document.getElementById('popup-link').href = properties["Link to view in Cortex"];
 
-    // Loop through the locations and add markers
-    locations.forEach((location) => {
-        const marker = new mapboxgl.Marker()
-            .setLngLat(location.coordinates)
-            .addTo(map);
+                document.getElementById('popup-container').style.display = 'block';
+            });
+        });
 
-        // Popup with image and description
-        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-            <h3>${location.title}</h3>
-            <p>${location.description}</p>
-            <img src="${location.image}" alt="${location.title}" style="width:100%; max-width:300px; border-radius:5px;">
-        `);
+        // Hide popup when clicking outside
+        map.on('click', () => {
+            document.getElementById('popup-container').style.display = 'none';
+        });
 
-        marker.setPopup(popup);
-    });
-</script>
+        // Close button functionality
+        document.getElementById('popup-close').addEventListener('click', () => {
+            document.getElementById('popup-container').style.display = 'none';
+        });
 
+    </script>
 </body>
 </html>
